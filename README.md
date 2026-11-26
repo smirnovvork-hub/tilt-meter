@@ -1,17 +1,53 @@
-# tilt_meter
+# Tilt Meter
 
-A new Flutter project.
+Flutter-приложение для оценки своего состояния после матчей CS2 в FACEIT.
 
-## Getting Started
+## Локальный запуск на Mac
 
-This project is a starting point for a Flutter application.
+Выполняй команды из корня репозитория. Нужны macOS 12+, Python 3.9+, Flutter с Dart 3.12.2+ и Xcode.
 
-A few resources to get you started if this is your first Flutter project:
+**Терминал 1 — backend**
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+В стандартном терминале macOS с zsh введи ключ по приглашению. Ввод скрыт, ключ передаётся только процессу backend.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+```zsh
+read -rs 'faceit_key?FACEIT API key: '
+printf '\n'
+FACEIT_API_KEY="$faceit_key" python3 backend/server.py
+```
+
+Если FACEIT отклоняет ключ, останови сервер через **Ctrl+C** и повтори команды с тем же ключом, с которым запросы к Data API v4 вернули HTTP 200. В приглашение вводится только значение ключа, без префикса `Bearer` и кавычек.
+
+**Терминал 2 — приложение**
+
+```zsh
+flutter pub get
+flutter run -d macos --dart-define=FACEIT_BACKEND_URL=http://127.0.0.1:8787
+```
+
+На симуляторе iOS используется тот же локальный backend. Оставь сервер запущенным в первом терминале. На уже открытом Tilt Meter достаточно снова нажать **«Подключить профиль»**. Для запуска приложения с нуля открой симулятор и выполни:
+
+```zsh
+flutter devices
+flutter run -d '<ID симулятора из списка>' --dart-define=FACEIT_BACKEND_URL=http://127.0.0.1:8787
+```
+
+Нажми **«Подключить FACEIT»** на главной или открой профиль. Введи `ThenWhyUHere` или другой никнейм FACEIT. Кнопка обновления рядом с заголовком матчей запрашивает историю заново.
+
+Оценки сохраняются в локальных настройках Flutter по паре FACEIT `player_id` и `match_id`. При повторном открытии анкеты подставляются ответы для выбранного матча. Список матчей загружается с FACEIT при запуске приложения.
+
+Нажми на карту в списке матчей, чтобы увидеть составы, K/A/D игроков и все показатели твоего профиля для матча. Для серии из нескольких карт выбери карту из списка. Кнопка оценки матча находится под карточкой.
+
+## Данные FACEIT
+
+Сервер запрашивает `/players?nickname=…`, `/players/{player_id}/history?game=cs2&limit=5` и `/matches/{match_id}/stats`. Для карты использует `rounds[].round_stats.Map`, для счёта — `teams[].team_stats.Final Score` с запасным вариантом через `round_stats.Score`. Своя команда и K/D определяются по точному `player_id` в `teams[].players[]`. Для серии из нескольких карт показывается счёт по картам и суммарное отношение убийств к смертям. История использует стандартный период FACEIT для запроса без `from`.
+
+Контракт API описан в [документации FACEIT Data API v4](https://docs.faceit.com/api/data/).
+
+## Проверки
+
+```zsh
+python3 -m unittest backend.test_server
+flutter test
+flutter analyze
+```

@@ -1,4 +1,5 @@
 class MatchRating {
+  final String matchId;
   final int anger;
   final int fatigue;
   final int concentration;
@@ -8,6 +9,7 @@ class MatchRating {
   final DateTime createdAt;
 
   const MatchRating({
+    required this.matchId,
     required this.anger,
     required this.fatigue,
     required this.concentration,

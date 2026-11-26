@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_theme.dart';
 
 class RatingQuestionCard extends StatelessWidget {
   final String title;
@@ -24,9 +25,11 @@ class RatingQuestionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
     return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(20)),
+      padding: const EdgeInsets.all(14),
+      decoration: AppTheme.panel(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -34,19 +37,19 @@ class RatingQuestionCard extends StatelessWidget {
             children: [
               Icon(icon, color: AppColors.orange, size: 22),
               const SizedBox(width: 10),
-              Expanded(
-                child: Text(title, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
-              ),
-              if (value != null)
+              Expanded(child: Text(title, style: textTheme.titleMedium)),
+              if (value != null) ...[
+                const SizedBox(width: 8),
                 Text(
                   '$value/5',
-                  style: const TextStyle(color: AppColors.orange, fontWeight: FontWeight.bold),
+                  style: textTheme.bodySmall?.copyWith(color: AppColors.orange, fontWeight: FontWeight.w800),
                 ),
+              ],
             ],
           ),
           const SizedBox(height: 8),
-          Text(subtitle, style: const TextStyle(color: Colors.grey, fontSize: 13, height: 1.4)),
-          const SizedBox(height: 20),
+          Text(subtitle, style: textTheme.bodySmall),
+          const SizedBox(height: 14),
           Row(
             children: List.generate(5, (index) {
               final rating = index + 1;
@@ -54,22 +57,29 @@ class RatingQuestionCard extends StatelessWidget {
 
               return Expanded(
                 child: Padding(
-                  padding: EdgeInsets.only(right: index == 4 ? 0 : 8),
-                  child: Material(
-                    color: isSelected ? AppColors.orange : AppColors.background,
-                    borderRadius: BorderRadius.circular(12),
-                    child: InkWell(
-                      onTap: () => onChanged(rating),
-                      borderRadius: BorderRadius.circular(12),
-                      child: SizedBox(
-                        height: 48,
-                        child: Center(
-                          child: Text(
-                            '$rating',
-                            style: TextStyle(
-                              fontSize: 17,
-                              fontWeight: FontWeight.bold,
-                              color: isSelected ? Colors.white : Colors.grey,
+                  padding: EdgeInsets.only(right: index == 4 ? 0 : 6),
+                  child: Semantics(
+                    selected: isSelected,
+                    button: true,
+                    child: Material(
+                      color: isSelected ? AppColors.orange : AppColors.background,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(7),
+                        side: BorderSide(color: isSelected ? AppColors.orange : AppColors.border),
+                      ),
+                      clipBehavior: Clip.antiAlias,
+                      child: InkWell(
+                        onTap: () => onChanged(rating),
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(minHeight: 48),
+                          child: Center(
+                            child: Text(
+                              '$rating',
+                              style: TextStyle(
+                                fontSize: 17,
+                                fontWeight: FontWeight.w800,
+                                color: isSelected ? AppColors.onOrange : AppColors.text,
+                              ),
                             ),
                           ),
                         ),
@@ -84,16 +94,10 @@ class RatingQuestionCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Flexible(
-                child: Text(lowLabel, style: const TextStyle(color: Colors.grey, fontSize: 11)),
-              ),
+              Flexible(child: Text(lowLabel, style: textTheme.bodySmall)),
               const SizedBox(width: 8),
               Flexible(
-                child: Text(
-                  highLabel,
-                  textAlign: TextAlign.end,
-                  style: const TextStyle(color: Colors.grey, fontSize: 11),
-                ),
+                child: Text(highLabel, textAlign: TextAlign.end, style: textTheme.bodySmall),
               ),
             ],
           ),

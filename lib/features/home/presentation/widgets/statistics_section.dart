@@ -1,45 +1,56 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../../../matches/domain/models/game_match.dart';
 
 class StatisticsSection extends StatelessWidget {
-  const StatisticsSection({super.key});
+  const StatisticsSection({super.key, required this.matches});
+
+  final List<GameMatch> matches;
 
   @override
   Widget build(BuildContext context) {
-    return const Row(
-      children: [
-        _StatCard(value: '3', title: 'Матча подряд'),
-        SizedBox(width: 8),
-        _StatCard(value: '2', title: 'Поражения'),
-        SizedBox(width: 8),
-        _StatCard(value: '0.84', title: 'Средний K/D'),
-      ],
+    final losses = matches.where((match) => match.isLoss).length;
+    final totalKd = matches.fold(0.0, (sum, match) => sum + match.kd);
+    final averageKd = matches.isEmpty ? '—' : (totalKd / matches.length).toStringAsFixed(2);
+
+    return DecoratedBox(
+      decoration: AppTheme.panel(),
+      child: IntrinsicHeight(
+        child: Row(
+          children: [
+            _StatCell(value: '${matches.length}', title: 'Матчи'),
+            const VerticalDivider(width: 1, color: AppColors.border, indent: 12, endIndent: 12),
+            _StatCell(value: '$losses', title: 'Поражения'),
+            const VerticalDivider(width: 1, color: AppColors.border, indent: 12, endIndent: 12),
+            _StatCell(value: averageKd, title: 'Средний K/D'),
+          ],
+        ),
+      ),
     );
   }
 }
 
-class _StatCard extends StatelessWidget {
+class _StatCell extends StatelessWidget {
+  const _StatCell({required this.value, required this.title});
+
   final String value;
   final String title;
 
-  const _StatCard({required this.value, required this.title});
-
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
     return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 4),
-        decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 5),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(value, style: const TextStyle(fontSize: 23, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 6),
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 11, color: Colors.grey),
-            ),
+            Text(value, style: textTheme.titleLarge),
+            const SizedBox(height: 2),
+            Text(title, textAlign: TextAlign.center, style: textTheme.bodySmall),
           ],
         ),
       ),

@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/section_heading.dart';
+import '../../../matches/domain/models/game_match.dart';
 import '../../domain/models/match_rating.dart';
 import '../widgets/rating_match_header.dart';
 import '../widgets/rating_question_card.dart';
 
 class MatchRatingScreen extends StatefulWidget {
+  final GameMatch match;
   final MatchRating? initialRating;
 
-  const MatchRatingScreen({super.key, this.initialRating});
+  const MatchRatingScreen({super.key, required this.match, this.initialRating});
 
   @override
   State<MatchRatingScreen> createState() => _MatchRatingScreenState();
@@ -53,6 +56,7 @@ class _MatchRatingScreenState extends State<MatchRatingScreen> {
     final comment = _commentController.text.trim();
 
     final rating = MatchRating(
+      matchId: widget.match.id,
       anger: _anger!,
       fatigue: _fatigue!,
       concentration: _concentration!,
@@ -67,6 +71,7 @@ class _MatchRatingScreenState extends State<MatchRatingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
     final answered = [
       _anger,
       _fatigue,
@@ -76,61 +81,33 @@ class _MatchRatingScreenState extends State<MatchRatingScreen> {
     ].where((value) => value != null).length;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          widget.initialRating == null ? 'Оценка матча' : 'Изменить оценку',
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: Text(widget.initialRating == null ? 'Оценка матча' : 'Изменить оценку')),
       body: SafeArea(
         child: Column(
           children: [
             Expanded(
               child: ListView(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
                 children: [
-                  const RatingMatchHeader(),
-                  const SizedBox(height: 28),
-
-                  const Text('Как прошёл матч?', style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Оцени своё состояние. Это поможет '
-                    'отслеживать изменения эмоций '
-                    'во время игры.',
-                    style: TextStyle(color: Colors.grey, height: 1.5),
+                  RatingMatchHeader(match: widget.match),
+                  const SizedBox(height: 16),
+                  SectionHeading(
+                    'Как прошёл матч?',
+                    trailing: Text(
+                      '$answered из 5',
+                      style: textTheme.bodySmall?.copyWith(color: AppColors.orange, fontWeight: FontWeight.w800),
+                    ),
                   ),
-                  const SizedBox(height: 20),
-
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'ТВОЯ ОЦЕНКА',
-                        style: TextStyle(
-                          color: Colors.grey,
-                          fontSize: 12,
-                          letterSpacing: 1.4,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text(
-                        '$answered из 5',
-                        style: const TextStyle(color: AppColors.orange, fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-
+                  const SizedBox(height: 10),
                   LinearProgressIndicator(
                     value: answered / 5,
                     minHeight: 5,
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(3),
                     color: AppColors.orange,
                     backgroundColor: AppColors.border,
+                    semanticsLabel: 'Заполнено вопросов',
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 16),
 
                   RatingQuestionCard(
                     title: 'Раздражение',
@@ -207,41 +184,31 @@ class _MatchRatingScreenState extends State<MatchRatingScreen> {
                   ),
                   const SizedBox(height: 24),
 
-                  const Text(
-                    'Комментарий (необязательно)',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
+                  const SectionHeading('Комментарий (необязательно)'),
                   const SizedBox(height: 12),
 
                   TextField(
                     controller: _commentController,
                     maxLines: 3,
                     maxLength: 500,
-                    decoration: InputDecoration(
-                      hintText: 'Что повлияло на твоё состояние?',
-                      hintStyle: const TextStyle(color: Colors.grey),
-                      filled: true,
-                      fillColor: AppColors.card,
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
-                    ),
+                    decoration: const InputDecoration(hintText: 'Что повлияло на твоё состояние?'),
                   ),
                 ],
               ),
             ),
 
             Container(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
               decoration: const BoxDecoration(
                 color: AppColors.background,
                 border: Border(top: BorderSide(color: AppColors.border)),
               ),
               child: SizedBox(
                 width: double.infinity,
-                height: 54,
                 child: FilledButton.icon(
                   onPressed: _canSave ? _saveRating : null,
                   icon: const Icon(Icons.check_circle_outline),
-                  label: const Text('Сохранить оценку', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  label: const Text('Сохранить оценку'),
                 ),
               ),
             ),
